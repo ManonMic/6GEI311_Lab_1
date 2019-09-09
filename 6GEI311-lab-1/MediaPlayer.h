@@ -9,8 +9,10 @@ private:
 	IGraphBuilder *pGraph;
 	IMediaControl *pControl;
 	IMediaEvent *pEvent;
-	IMediaSeeking *seek;
+	IMediaSeeking *pSeek;
 	HRESULT hresult;
+	LONGLONG *pCurrentPos;
+	LONGLONG *pStopPos;
 	enum STATE {
 		play,
 		pause
@@ -22,6 +24,7 @@ private:
 	void PlayVideo();
 	void PauseVideo();
 	void FastForwardVideo();
+	void RestartVideo();
 public:
 	MediaPlayer();
 	~MediaPlayer();

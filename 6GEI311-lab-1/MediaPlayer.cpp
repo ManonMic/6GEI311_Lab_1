@@ -22,7 +22,7 @@ void MediaPlayer::InitFilterGraphManager()
 
 void MediaPlayer::BuildGraph()
 {
-	LPCWSTR filePath = L"C:\\Users\\labop2\\Downloads\\Example.avi";
+	LPCWSTR filePath = L"C:\\Example.avi";
 
 	hresult = pGraph->QueryInterface(IID_IMediaControl, (void **)&pControl);
 	if (FAILED(hresult))
@@ -45,7 +45,20 @@ void MediaPlayer::BuildGraph()
 		return;
 	}
 
+	
 	hresult = pGraph->RenderFile(filePath, NULL);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not render the file.");
+		return;
+	}
+
+	hresult = pSeek->GetPositions(pCurrentPos, pStopPos);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not get current and stop positions.");
+		return;
+	}
 }
 
 bool MediaPlayer::ReadKey(char *c)
@@ -124,6 +137,10 @@ void MediaPlayer::FastForwardVideo()
 	}
 }
 
+void MediaPlayer::RestartVideo()
+{
+}
+
 MediaPlayer::MediaPlayer()
 {
 	pGraph = NULL;
@@ -131,7 +148,8 @@ MediaPlayer::MediaPlayer()
 	pEvent = NULL;
 	pSeek = NULL;
 	hresult = NULL;
-
+	pCurrentPos = NULL;
+	pStopPos = NULL;
 	InitCOMLib();
 	InitFilterGraphManager();
 	BuildGraph();
