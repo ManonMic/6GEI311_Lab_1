@@ -10,22 +10,22 @@ private:
 	IMediaControl *pControl;
 	IMediaEvent *pEvent;
 	IMediaSeeking *pSeek;
-	HRESULT hresult;
-	LONGLONG *pCurrentPos;
-	LONGLONG *pStopPos;
 	enum STATE {
 		play,
 		pause
 	};
 
-	void InitCOMLib();
-	void InitFilterGraphManager();
-	void BuildGraph();
-	void PlayVideo();
-	void PauseVideo();
-	void FastForwardVideo();
-	void RestartVideo();
-	void GetPositions();
+	HRESULT InitCOMLib();
+	HRESULT RenderFile(LPCWSTR filePath);
+	HRESULT SetControl();
+	HRESULT SetEvent();
+	HRESULT SetSeek();
+	HRESULT InitFilterGraphManager();
+	HRESULT BuildGraph();
+	HRESULT PlayVideo();
+	HRESULT PauseVideo();
+	HRESULT FastForwardVideo();
+	HRESULT RestartVideo();
 public:
 	MediaPlayer();
 	~MediaPlayer();

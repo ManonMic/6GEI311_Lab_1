@@ -1,57 +1,82 @@
 #include <conio.h>
 #include "MediaPlayer.h"
 
-void MediaPlayer::InitCOMLib()
+HRESULT MediaPlayer::InitCOMLib()
 {
-	hresult = CoInitialize(NULL);
+	HRESULT hresult = CoInitialize(NULL);
 	if (FAILED(hresult))
 	{
 		printf("ERROR - Could not initialize COM library.");
 	}
+	return hresult;
 }
 
-void MediaPlayer::InitFilterGraphManager()
+HRESULT MediaPlayer::InitFilterGraphManager()
 {
-	hresult = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
-		IID_IGraphBuilder, (void **)&pGraph);
+	HRESULT hresult = CoCreateInstance(
+		CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
+		IID_IGraphBuilder, (void **)&pGraph
+	);
 	if (FAILED(hresult))
 	{
 		printf("ERROR - Could not create the Filter Graph Manager.");
 	}
+	return hresult;
 }
 
-void MediaPlayer::BuildGraph()
+HRESULT MediaPlayer::BuildGraph()
 {
-	LPCWSTR filePath = L"C:\\Example.avi";
-
-	hresult = pGraph->QueryInterface(IID_IMediaControl, (void **)&pControl);
-	if (FAILED(hresult))
-	{
-		printf("ERROR - Could not query the control.");
-		return;
-	}
-
-	hresult = pGraph->QueryInterface(IID_IMediaEvent, (void **)&pEvent);
-	if (FAILED(hresult))
-	{
-		printf("ERROR - Could not query the event.");
-		return;
-	}
-
-	hresult = pGraph->QueryInterface(IID_IMediaSeeking, (void**)&pSeek);
-	if (FAILED(hresult))
-	{
-		printf("ERROR - Could not query the seek.");
-		return;
-	}
-
-	
-	hresult = pGraph->RenderFile(filePath, NULL);
+	HRESULT hresult = NULL;
+		
+	hresult = RenderFile(L"C:\\Example.avi");
 	if (FAILED(hresult))
 	{
 		printf("ERROR - Could not render the file.");
-		return;
+		return hresult;
 	}
+
+	hresult = SetControl();
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the control.");
+		return hresult;
+	}
+
+	hresult = SetEvent();
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the event.");
+		return hresult;
+	}
+
+	hresult = SetSeek();
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the seek.");
+		return hresult;
+	}
+
+	return hresult;
+}
+
+HRESULT MediaPlayer::RenderFile(LPCWSTR filePath)
+{
+	return pGraph->RenderFile(filePath, NULL);
+}
+
+HRESULT MediaPlayer::SetControl()
+{
+	return pGraph->QueryInterface(IID_IMediaControl, (void **)&pControl);
+}
+
+HRESULT MediaPlayer::SetEvent()
+{
+	return pGraph->QueryInterface(IID_IMediaEvent, (void **)&pEvent);
+}
+
+HRESULT MediaPlayer::SetSeek()
+{
+	return pGraph->QueryInterface(IID_IMediaSeeking, (void**)&pSeek);
 }
 
 bool MediaPlayer::ReadKey(char *c)
@@ -62,7 +87,7 @@ bool MediaPlayer::ReadKey(char *c)
 		*c = toupper(_getch());
 		switch (*c)
 		{
-		case 'P':
+			case 'P':
 				if (state == pause)
 				{
 					PlayVideo();
@@ -89,29 +114,40 @@ bool MediaPlayer::ReadKey(char *c)
 	return valid;
 }
 
-void MediaPlayer::PlayVideo()
+HRESULT MediaPlayer::PlayVideo()
 {
-	hresult = pControl->Run();
+	HRESULT hresult = pControl->Run();
 	if (SUCCEEDED(hresult))
 	{
 		state = play;
 		long evCode;
 		pEvent->WaitForCompletion(1, &evCode);
 	}
+	else
+	{
+		printf("ERROR - Could not play the video.");
+	}
+	return hresult;
 }
 
-void MediaPlayer::PauseVideo()
+HRESULT MediaPlayer::PauseVideo()
 {
-	hresult = pControl->Pause();
+	HRESULT hresult = pControl->Pause();
 	if (SUCCEEDED(hresult))
 	{
 		state = pause;
 	}
+	else
+	{
+		printf("ERROR - Could not pause the video.");
+	}
+	return hresult;
 }
 
-void MediaPlayer::FastForwardVideo()
+HRESULT MediaPlayer::FastForwardVideo()
 {
-	double rate; 
+	double rate;
+	HRESULT hresult = NULL;
 	pSeek->GetRate(&rate);
 	if (rate == 1.0)
 	{
@@ -129,20 +165,13 @@ void MediaPlayer::FastForwardVideo()
 			printf("ERROR - Could not set rate to 1.0.");
 		}
 	}
+	return hresult;
 }
 
-void MediaPlayer::GetPositions()
-{
-	hresult = pSeek->GetPositions(pCurrentPos, pStopPos);
-	if (FAILED(hresult))
-	{
-		printf("ERROR - Could not get current and stop positions.");
-	}
-}
-
-void MediaPlayer::RestartVideo()
+HRESULT MediaPlayer::RestartVideo()
 {
 	REFERENCE_TIME start = 0;
+	HRESULT hresult = NULL;
 	hresult = pSeek->SetPositions(
 		&start, AM_SEEKING_AbsolutePositioning,
 		NULL, AM_SEEKING_NoPositioning
@@ -159,6 +188,7 @@ void MediaPlayer::RestartVideo()
 	{
 		PlayVideo();
 	}
+	return hresult;
 }
 
 MediaPlayer::MediaPlayer()
@@ -167,13 +197,10 @@ MediaPlayer::MediaPlayer()
 	pControl = NULL;
 	pEvent = NULL;
 	pSeek = NULL;
-	hresult = NULL;
-	pCurrentPos = NULL;
-	pStopPos = NULL;
 	InitCOMLib();
 	InitFilterGraphManager();
 	BuildGraph();
-	state = pause;
+	PauseVideo();
 }
 
 MediaPlayer::~MediaPlayer() {}
