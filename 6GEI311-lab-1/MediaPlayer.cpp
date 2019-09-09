@@ -52,13 +52,6 @@ void MediaPlayer::BuildGraph()
 		printf("ERROR - Could not render the file.");
 		return;
 	}
-
-	hresult = pSeek->GetPositions(pCurrentPos, pStopPos);
-	if (FAILED(hresult))
-	{
-		printf("ERROR - Could not get current and stop positions.");
-		return;
-	}
 }
 
 bool MediaPlayer::ReadKey(char *c)
@@ -85,6 +78,7 @@ bool MediaPlayer::ReadKey(char *c)
 				valid = true;
 				break;
 			case 'R':
+				RestartVideo();
 				valid = true;
 				break;
 			case 'Q':
@@ -137,8 +131,34 @@ void MediaPlayer::FastForwardVideo()
 	}
 }
 
+void MediaPlayer::GetPositions()
+{
+	hresult = pSeek->GetPositions(pCurrentPos, pStopPos);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not get current and stop positions.");
+	}
+}
+
 void MediaPlayer::RestartVideo()
 {
+	REFERENCE_TIME start = 0;
+	hresult = pSeek->SetPositions(
+		&start, AM_SEEKING_AbsolutePositioning,
+		NULL, AM_SEEKING_NoPositioning
+	);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not set positions.");
+	}
+	if (state == pause)
+	{
+		PauseVideo();
+	}
+	else
+	{
+		PlayVideo();
+	}
 }
 
 MediaPlayer::MediaPlayer()
@@ -156,6 +176,4 @@ MediaPlayer::MediaPlayer()
 	state = pause;
 }
 
-MediaPlayer::~MediaPlayer()
-{
-}
+MediaPlayer::~MediaPlayer() {}

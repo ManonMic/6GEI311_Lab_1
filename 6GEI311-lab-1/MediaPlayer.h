@@ -25,6 +25,7 @@ private:
 	void PauseVideo();
 	void FastForwardVideo();
 	void RestartVideo();
+	void GetPositions();
 public:
 	MediaPlayer();
 	~MediaPlayer();
