@@ -64,27 +64,21 @@ bool MediaPlayer::ReadKey(char *c)
 
 void MediaPlayer::PlayVideo()
 {
+	hresult = pControl->Run();
 	if (SUCCEEDED(hresult))
 	{
-		hresult = pControl->Run();
-		if (SUCCEEDED(hresult))
-		{
-			state = play;
-			long evCode;
-			pEvent->WaitForCompletion(1, &evCode);
-		}
+		state = play;
+		long evCode;
+		pEvent->WaitForCompletion(1, &evCode);
 	}
 }
 
 void MediaPlayer::PauseVideo()
 {
+	hresult = pControl->Pause();
 	if (SUCCEEDED(hresult))
 	{
-		hresult = pControl->Pause();
-		if (SUCCEEDED(hresult))
-		{
-			state = pause;
-		}
+		state = pause;
 	}
 }
 
@@ -107,11 +101,6 @@ void MediaPlayer::FastForwardVideo()
 		{
 			printf("ERROR - Could not set rate to 1.0.");
 		}
-	}
-	return hresult;
-	if (SUCCEEDED(hresult))
-	{
-		
 	}
 }
 
