@@ -25,7 +25,26 @@ void MediaPlayer::BuildGraph()
 	LPCWSTR filePath = L"C:\\Users\\labop2\\Downloads\\Example.avi";
 
 	hresult = pGraph->QueryInterface(IID_IMediaControl, (void **)&pControl);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the control.");
+		return;
+	}
+
 	hresult = pGraph->QueryInterface(IID_IMediaEvent, (void **)&pEvent);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the event.");
+		return;
+	}
+
+	hresult = pGraph->QueryInterface(IID_IMediaSeeking, (void**)&pSeek);
+	if (FAILED(hresult))
+	{
+		printf("ERROR - Could not query the seek.");
+		return;
+	}
+
 	hresult = pGraph->RenderFile(filePath, NULL);
 }
 
@@ -49,6 +68,7 @@ bool MediaPlayer::ReadKey(char *c)
 				valid = true;
 				break;
 			case 'A':
+				FastForwardVideo();
 				valid = true;
 				break;
 			case 'R':
@@ -85,10 +105,10 @@ void MediaPlayer::PauseVideo()
 void MediaPlayer::FastForwardVideo()
 {
 	double rate; 
-	seek->GetRate(&rate);
+	pSeek->GetRate(&rate);
 	if (rate == 1.0)
 	{
-		hresult = seek->SetRate(2.0);
+		hresult = pSeek->SetRate(2.0);
 		if (FAILED(hresult))
 		{
 			printf("ERROR - Could not set rate to 2.0.");
@@ -96,7 +116,7 @@ void MediaPlayer::FastForwardVideo()
 	}
 	else
 	{
-		hresult = seek->SetRate(1.0);
+		hresult = pSeek->SetRate(1.0);
 		if (FAILED(hresult))
 		{
 			printf("ERROR - Could not set rate to 1.0.");
@@ -109,7 +129,7 @@ MediaPlayer::MediaPlayer()
 	pGraph = NULL;
 	pControl = NULL;
 	pEvent = NULL;
-	seek = NULL;
+	pSeek = NULL;
 	hresult = NULL;
 
 	InitCOMLib();
